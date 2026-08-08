@@ -2,9 +2,8 @@
  * The vocabulary of `CONTEXT.md`, as types.
  *
  * Nothing in `src/domain/` imports from a vendor. `zod` is the one exception, and a
- * deliberate one: it is a validation library rather than an I/O framework, it is what both
- * LangChain and the provider already accept, and its inference means a handler's argument
- * type is derived from its schema instead of restated next to it.
+ * deliberate one — see `docs/adr/0003-zod-is-domain-vocabulary.md`, which records why and
+ * what was weighed against it.
  */
 import type { z } from "zod";
 

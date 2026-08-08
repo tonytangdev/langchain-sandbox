@@ -9,9 +9,9 @@ import { requireEnv } from "./adapters/env.js";
 import { openRouterModel } from "./adapters/openrouter-model.js";
 import { tavilySearch } from "./adapters/tavily-search.js";
 import { runAgent } from "./domain/agent-loop.js";
-import { AbortedError } from "./domain/errors.js";
 import { addTool } from "./domain/tools/add.js";
 import { webSearchTool } from "./domain/tools/web-search.js";
+import type { Message } from "./domain/types.js";
 
 /**
  * One deadline for the whole run, not one per request.
@@ -42,26 +42,36 @@ async function main(): Promise<void> {
     controller.abort();
   }, DEADLINE_MS);
 
+  // Kept out here so a run that dies half way still has a conversation to show. A failed run
+  // is the one you most want to read the shapes of, and the return value never arrives.
+  const conversation: Message[] = [];
+
   try {
-    const conversation = await runAgent(question, {
+    await runAgent(question, {
       model,
       tools: [addTool, webSearchTool(search)],
-      observer: consoleObserver(),
+      observer: { ...consoleObserver(), onMessage: (message) => conversation.push(message) },
       signal: controller.signal,
     });
-    printConversation(conversation);
   } catch (error) {
-    // A timeout should read as a timeout, not as a crash. Everything else keeps its stack:
-    // while learning, seeing what broke beats a tidy message that hides it.
-    if (deadlineFired && error instanceof AbortedError) {
+    printConversation(conversation);
+
+    // A timeout should read as a timeout, not as a crash. The deadline is what we know, so
+    // that is what we test — not the error type, which depends on where the abort landed.
+    if (deadlineFired) {
       process.stderr.write(`\nTimed out: the run passed its ${DEADLINE_MS / 1000}s deadline and was aborted.\n`);
       process.exitCode = 1;
       return;
     }
+
+    // Everything else keeps its stack: while learning, seeing what broke beats a tidy
+    // message that hides it.
     throw error;
   } finally {
     clearTimeout(timer);
   }
+
+  printConversation(conversation);
 }
 
 await main();

@@ -12,6 +12,7 @@ import { ChatOpenRouter } from "@langchain/openrouter";
 import { AbortedError, ModelError } from "../domain/errors.js";
 import type { ModelPort } from "../domain/ports.js";
 import type { Message, Tool, ToolCall, Turn } from "../domain/types.js";
+import { isAbort, messageOf } from "./vendor-errors.js";
 
 export type OpenRouterModelConfig = {
   readonly apiKey: string;
@@ -23,11 +24,6 @@ export type OpenRouterModelConfig = {
   readonly model?: string;
   /** Optional OpenRouter attribution only; nothing depends on it. */
   readonly siteName?: string;
-  /**
-   * Defaults to OpenRouter. Overridable so this adapter can be pointed at a stub server —
-   * the ModelPort fake covers the loop, but nothing else covers the vendor wiring in here.
-   */
-  readonly baseURL?: string;
 };
 
 export function openRouterModel(config: OpenRouterModelConfig): ModelPort {
@@ -35,7 +31,6 @@ export function openRouterModel(config: OpenRouterModelConfig): ModelPort {
     model: config.model ?? "moonshotai/kimi-k3",
     apiKey: config.apiKey,
     siteName: config.siteName,
-    baseURL: config.baseURL,
   });
 
   return {
@@ -122,19 +117,15 @@ async function callVendor<T>(action: () => Promise<T>, signal: AbortSignal | und
   try {
     return await action();
   } catch (cause) {
-    if (signal?.aborted || isAbort(cause)) {
+    if (isAbort(cause, signal)) {
       throw new AbortedError("The run was aborted while waiting on the model.", { cause });
     }
     throw new ModelError(describe(cause), { cause });
   }
 }
 
-function isAbort(cause: unknown): boolean {
-  return cause instanceof Error && (cause.name === "AbortError" || cause.name === "APIUserAbortError");
-}
-
 function describe(cause: unknown): string {
-  const message = cause instanceof Error ? cause.message : String(cause);
+  const message = messageOf(cause);
   const status = cause instanceof Error ? (cause as { statusCode?: number }).statusCode : undefined;
 
   if (status === 401 || status === 403) {

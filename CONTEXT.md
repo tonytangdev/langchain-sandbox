@@ -42,6 +42,12 @@ A **Tool** the **Provider** executes on its own infrastructure, inside the same 
 No **Tool Call** reaches us and we return no result — the **Model** sees the output
 directly. Cheaper to adopt and impossible to observe.
 
+## Message
+
+One entry in the conversation sent to the **Model**: the question asked, an assistant **Turn**,
+or the result of one **Tool Call**. A **Turn** becomes a message; a tool result is its own
+separate message quoting the id of the call it answers.
+
 ## Turn
 
 One model response. May contain answer text, one or more **Tool Calls**, or both. A **Turn**

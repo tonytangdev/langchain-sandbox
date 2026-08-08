@@ -236,3 +236,42 @@ Deviations from the spec as written, all deliberate:
 Still no automated tests, as specified. The seam is `runAgent` and it was exercised through a
 scripted `ModelPort` during implementation; that harness was thrown away rather than
 committed. It is the obvious thing to reinstate when the loop grows its first branch.
+
+### Post-review changes
+
+Reviewed on two axes (standards, spec). Acted on:
+
+- **US5 now holds on failure, not just success.** The conversation was previously printed only
+  on the happy path, so a timeout or a crash — the runs whose message shapes are most worth
+  reading — printed nothing. `AgentObserver.onMessage` reports each message as it joins the
+  conversation, `main` accumulates, and it prints on every exit path.
+- **US19's guard was tighter than the story.** It required an `AbortedError`, which only the
+  two vendor adapters raise; a deadline firing anywhere else read as a crash. It now tests the
+  deadline itself, which is the thing we actually know.
+- **Abort detection had drifted between the adapters** — the model adapter recognised
+  `APIUserAbortError`, the search adapter didn't. Both now share `isAbort` in
+  `adapters/vendor-errors.ts`. ADR 0001 still puts error *translation* in each adapter; only
+  "were we cancelled?" is shared, because it is not a per-vendor question.
+- **`OpenRouterModelConfig.baseURL` removed.** It was a hook for a stub server, and with tests
+  deferred there is nothing in the repo that uses it. Reinstate it alongside the first test
+  that needs it.
+- **Zod-in-the-domain is now ADR 0003** rather than a justification in a file comment. It is a
+  decision that reads as an ADR-0002 violation from the import list alone, so it belongs where
+  decisions live.
+- **`Message` added to `CONTEXT.md`.** It is a domain type and a term the spec uses, and it
+  was missing from the glossary.
+
+Knowingly not acted on:
+
+- **Correction to the note above:** `AgentObserver` carries *four* concerns, not three —
+  tokens, turn, tool-call start, tool-call end — and now five with `onMessage`. The spec's
+  "filtered to three concerns only" (line 151) governs what the *adapter* pulls out of
+  LangChain's event firehose, which still holds. `onTurn` earns its place: the
+  `no tool calls — the loop ends here` line is the clearest statement of the termination
+  condition anywhere in the output.
+- **The Spike is kept**, though `CONTEXT.md` defines one as "deleted once the understanding is
+  had". Stage 1 was a deliverable, and it is the shortest honest answer to the question this
+  repo exists to answer. Flagged rather than resolved: deleting it, or softening the glossary,
+  is a call for a human.
+- **`AgentObserver` is not in the glossary.** Noted as a gap for `/domain-modeling` rather
+  than invented here.

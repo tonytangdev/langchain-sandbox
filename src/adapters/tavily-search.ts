@@ -7,6 +7,7 @@
 import { TavilySearch } from "@langchain/tavily";
 import { AbortedError, SearchError } from "../domain/errors.js";
 import type { SearchPort, SearchResult } from "../domain/ports.js";
+import { isAbort, messageOf } from "./vendor-errors.js";
 
 export type TavilySearchConfig = {
   readonly apiKey: string;
@@ -25,10 +26,10 @@ export function tavilySearch(config: TavilySearchConfig): SearchPort {
       try {
         raw = await tool.invoke({ query }, { signal });
       } catch (cause) {
-        if (signal?.aborted || (cause instanceof Error && cause.name === "AbortError")) {
+        if (isAbort(cause, signal)) {
           throw new AbortedError("The run was aborted while waiting on the search provider.", { cause });
         }
-        throw new SearchError(`The search call failed: ${describe(cause)}`, { cause });
+        throw new SearchError(`The search call failed: ${messageOf(cause)}`, { cause });
       }
 
       // `TavilySearch` catches its own failures and returns `{ error }` rather than throwing,
@@ -62,8 +63,4 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function asString(value: unknown): string {
   return typeof value === "string" ? value : "";
-}
-
-function describe(cause: unknown): string {
-  return cause instanceof Error ? cause.message : String(cause);
 }

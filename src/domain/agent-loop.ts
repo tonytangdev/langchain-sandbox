@@ -16,6 +16,14 @@ export type AgentObserver = {
   readonly onToken?: (token: string) => void;
   /** A Turn has arrived in full; `index` counts from 0. */
   readonly onTurn?: (turn: Turn, index: number) => void;
+  /**
+   * A message has joined the conversation.
+   *
+   * The return value already carries the finished conversation, so this exists for the run
+   * that *doesn't* finish: a caller that has been told each message as it landed can still
+   * print the conversation after a timeout or a crash, which is exactly the run worth reading.
+   */
+  readonly onMessage?: (message: Message) => void;
   /** We are about to run a tool the model asked for. */
   readonly onToolCallStart?: (call: ToolCall) => void;
   /** That tool returned. `durationMs` is wall-clock, which is most of the point of watching. */
@@ -41,7 +49,15 @@ export async function runAgent(question: string, deps: AgentDependencies): Promi
   const { model, tools, observer, signal } = deps;
   const byName = new Map(tools.map((tool) => [tool.name, tool]));
 
-  const messages: Message[] = [{ role: "user", content: question }];
+  const messages: Message[] = [];
+  const record = (...added: Message[]) => {
+    for (const message of added) {
+      messages.push(message);
+      observer?.onMessage?.(message);
+    }
+  };
+
+  record({ role: "user", content: question });
 
   for (let index = 0; ; index++) {
     // Send the conversation so far. What comes back is one Turn: some text, some tool calls,
@@ -50,7 +66,7 @@ export async function runAgent(question: string, deps: AgentDependencies): Promi
     observer?.onTurn?.(turn, index);
 
     // The turn joins the conversation whether or not it asked for anything.
-    messages.push({ role: "assistant", content: turn.text, toolCalls: turn.toolCalls });
+    record({ role: "assistant", content: turn.text, toolCalls: turn.toolCalls });
 
     // A Turn with no Tool Calls is the model saying it is done. That is all "finished" means.
     if (turn.toolCalls.length === 0) return messages;
@@ -60,7 +76,7 @@ export async function runAgent(question: string, deps: AgentDependencies): Promi
     const results = await Promise.all(turn.toolCalls.map((call) => dispatch(call, byName, observer, signal)));
 
     // Each result is its own message, quoting the id of the call it answers. Round again.
-    messages.push(...results);
+    record(...results);
   }
 }
 
