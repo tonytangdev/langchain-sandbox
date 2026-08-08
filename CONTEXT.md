@@ -59,6 +59,13 @@ The cycle of: send conversation to **Model** → receive **Turn** → run any **
 append their results to the conversation → repeat, until a turn contains no tool calls.
 Whichever component owns this loop owns the agent.
 
+## Workflow
+
+A named bundle of a system prompt, a **Model**, and a set of **Tools**, chosen before a
+conversation begins. A workflow decides what the agent can do, not what it is asked — a tool
+the workflow does not name is never offered to the model, so a missing capability is an
+absence rather than an instruction. Every workflow drives one **Agent** today.
+
 ## Spike
 
 Throwaway code written to understand something, deliberately unstructured, deleted once

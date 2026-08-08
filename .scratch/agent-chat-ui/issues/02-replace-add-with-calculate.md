@@ -14,18 +14,19 @@ arithmetic tools.
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `npm run cli "what is 2^3^2"` answers 512
-- [ ] `npm run cli "what is -2^2"` answers -4
-- [ ] Expressions support `+ - * / ^`, parentheses, unary minus and decimal/exponent
+- [x] `npm run cli "what is 2^3^2"` answers 512
+- [x] `npm run cli "what is -2^2"` answers -4
+- [x] Expressions support `+ - * / ^`, parentheses, unary minus and decimal/exponent
       literals, and nothing else — no identifiers, no function calls, no property access
-- [ ] Empty or whitespace-only input returns an error string, never a result
-- [ ] A result that is not a finite number returns an error string naming the problem
-- [ ] A malformed expression returns an error string and the agent can try again in the
+- [x] Empty or whitespace-only input returns an error string, never a result
+- [x] A result that is not a finite number returns an error string naming the problem
+- [x] A malformed expression returns an error string and the agent can try again in the
       same conversation
-- [ ] The tool description warns that integers beyond 2^53 are imprecise
-- [ ] `add` no longer exists anywhere in the repo
+- [x] The tool description warns that integers beyond 2^53 are imprecise
+- [~] `add` no longer exists anywhere in the repo — the Tool is gone, but `README.md` and
+      `spike/one-shot-agent.ts` still mention it (see comment below)
 
 ## Comments
 
@@ -45,3 +46,30 @@ small magnitudes.
 
 Since this repo has no tests, exercise the parser through the CLI before ticket 06
 wires it to a UI — a wrong arithmetic answer looks exactly like a correct one.
+
+---
+
+Built as `src/domain/tools/calculate.ts`: a hand-written tokenizer plus recursive-descent
+parser that evaluates as it parses, no dependency added. `src/domain/tools/add.ts` is
+deleted and `src/main.ts` now passes `calculateTool`. Tool name `calculate`, one required
+string argument `expression`.
+
+The precedence table is `expression → term → unary → power → primary`, with `power`
+recursing into `unary` on its right. That single arrangement produces both required
+behaviours: `^` right-associative (`2^3^2` = 512) and unary minus looser than `^`
+(`-2^2` = -4).
+
+Deviations worth knowing:
+
+- Whole numbers skip the 12-significant-digit rounding. Rounding `9007199254740992` to 12
+  digits would replace correct digits with zeros, which is a worse lie than the float
+  imprecision the description already warns about. Non-integers still round, so `0.1+0.2`
+  prints `0.3`.
+- Division by zero is caught at the operator rather than left to become `Infinity`, so the
+  error names the step instead of only the symptom.
+- A nesting cap of 64 levels exists because the parser recurses; without it, deep input
+  would escape as a `RangeError` rather than as a sentence the Model can read.
+- `add` is gone from `src/`, but `README.md` (the worked examples and the sample output
+  block) and `spike/one-shot-agent.ts` still reference it. Both were outside this ticket's
+  scope fence and are being edited concurrently by other tickets, so they were left alone —
+  the README needs a follow-up pass.

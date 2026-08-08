@@ -1,0 +1,22 @@
+// The domain and the CLI. Kept separate from the Next.js config because the
+// framework rewrites `tsconfig.json` on first run, and letting it own a single
+// shared config silently drops the strict module settings below.
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts", "spike/**/*.ts"]
+}

@@ -44,6 +44,11 @@ export function consoleObserver(): AgentObserver {
     onToolCallEnd: (call, result, durationMs) => {
       process.stdout.write(`${DIM}  ← ${call.name} returned in ${durationMs}ms: ${preview(result)}${RESET}\n`);
     },
+
+    onGaveUp: (iterations) => {
+      breakLine();
+      process.stdout.write(`${BOLD}[gave up] still asking for tools after ${iterations} turns — stopping here${RESET}\n`);
+    },
   };
 }
 

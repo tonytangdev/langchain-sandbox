@@ -28,6 +28,12 @@ export type Turn = {
 
 /** One entry in the conversation sent to the Model. */
 export type Message =
+  /**
+   * Instructions the Model is given before anyone speaks. Not part of the conversation the
+   * user is having — it is what the agent has been told it is, which is why the Agent Loop
+   * takes it as a dependency and puts it ahead of the messages it was handed.
+   */
+  | { readonly role: "system"; readonly content: string }
   | { readonly role: "user"; readonly content: string }
   | { readonly role: "assistant"; readonly content: string; readonly toolCalls: readonly ToolCall[] }
   | {

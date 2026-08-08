@@ -1,19 +1,60 @@
+// The Next.js app only. Next rewrites this file on first run, which is exactly
+// why the domain and CLI live in `tsconfig.node.json` instead — see the comment
+// there. `npm run typecheck` runs both.
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "types": ["node"],
-
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2023"
+    ],
+    // `nodenext`, not the `esnext`/`bundler` pair Next scaffolds, because the route now
+    // imports the domain — and the domain is Node ESM, so every import inside it carries an
+    // explicit `.js` extension. Turbopack only rewrites those to `.ts` when it is told the
+    // project resolves the way Node does; under `bundler` it looks for a `.js` file that
+    // does not exist and the route 500s with "Module not found". The cost is that relative
+    // imports inside `app/` need their extensions too, which is the same rule `src/` has
+    // always followed.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    // So the route can say `@/src/domain/...` rather than counting `../` up out of
+    // `app/api/chat/`. The domain is deliberately outside `app/`, so every import that
+    // crosses into it would otherwise be three levels of guesswork.
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "verbatimModuleSyntax": true,
-
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
     "noEmit": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "spike/**/*.ts"]
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src",
+    "spike"
+  ]
 }

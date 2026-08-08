@@ -13,18 +13,18 @@ The CLI keeps working throughout.
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `npm run dev` serves a page with an empty transcript and a text box
-- [ ] Submitting a message shows it in the transcript and streams a hardcoded reply in
+- [x] `npm run dev` serves a page with an empty transcript and a text box
+- [x] Submitting a message shows it in the transcript and streams a hardcoded reply in
       progressively, not all at once
-- [ ] Reloading the page gives a fresh empty conversation
-- [ ] Replies render markdown, and render it sanely while still incomplete mid-stream
-- [ ] The transcript stays pinned to the bottom as content arrives, but does not fight
+- [x] Reloading the page gives a fresh empty conversation
+- [x] Replies render markdown, and render it sanely while still incomplete mid-stream
+- [x] The transcript stays pinned to the bottom as content arrives, but does not fight
       a user who has scrolled up
-- [ ] The CLI still runs, and `npm run typecheck` covers both the app and the
+- [x] The CLI still runs, and `npm run typecheck` covers both the app and the
       domain/CLI
-- [ ] The domain and CLI keep their existing strict compiler settings
+- [x] The domain and CLI keep their existing strict compiler settings
 
 ## Comments
 
@@ -47,3 +47,36 @@ Two protocol details that cost an afternoon each if missed: the opening chunk mu
 emitted explicitly — nothing else creates the assistant message, and a stream of pure
 text deltas renders nothing — and the stream closes when the handler's promise
 settles, so it must settle on every path including error and abort.
+
+---
+
+Built. Next.js 16 App Router at the repo root: `app/layout.tsx`, `app/page.tsx`,
+`app/chat.tsx` (the only client component), `app/globals.css`, `app/api/chat/route.ts`,
+plus `next.config.ts`.
+
+`ai@7.0.58` and `@ai-sdk/react@4.0.61` are pinned with `--save-exact`; the binding
+declares a dependency on that exact `ai` version, so they move together or not at all.
+Two other direct deps: `streamdown` (markdown that tolerates being half-written) and
+`use-stick-to-bottom` (the autoscroll). No Tailwind — `app/globals.css` is hand-rolled.
+
+`tsconfig.json` is the app's and `tsconfig.node.json` is the domain and CLI's, byte-for-byte
+the old settings. The prediction in this ticket was right: Next rewrote `tsconfig.json`
+on first `npm run dev` (flipped `jsx` to `react-jsx`, added `.next/dev/types`). It left
+`tsconfig.node.json` alone. `typecheck` runs both, in that order.
+
+The chunk protocol the route writes, per response: `start` → `text-start` →
+n × `text-delta` → `text-end` → `finish`. The `start` chunk is what creates the
+assistant message; the closing pair is written in a `finally`, and the per-delta sleep
+aborts on `request.signal`, so the handler promise settles on completion, throw and
+client disconnect alike.
+
+Deviation, small: `StickToBottom.Content` injects its own scroll element between the
+wrapper and the content, so the overflow lives on `scrollClassName` (`.transcript-scroll`)
+rather than on the visible bordered box. Putting it on the box scrolls nothing and is
+silent about it.
+
+Verified in Chrome against `npm run dev`: assistant text grew 29 → 62 → 92 → … → 503
+characters in ~30-character steps sampled every 150 ms, so it is genuinely progressive.
+Reload gives an empty transcript. Left alone the transcript sits 1 px from the bottom
+while content arrives; scrolled to the top mid-stream it stayed at `scrollTop` 0 while
+the content grew 808 → 1085 px. No console errors, `POST /api/chat` 200.

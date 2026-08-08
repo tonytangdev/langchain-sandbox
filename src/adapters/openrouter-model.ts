@@ -7,7 +7,7 @@
  * nothing else.
  */
 import type { AIMessageChunk, BaseMessage } from "@langchain/core/messages";
-import { AIMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { ChatOpenRouter } from "@langchain/openrouter";
 import { AbortedError, ModelError } from "../domain/errors.js";
 import type { ModelPort } from "../domain/ports.js";
@@ -74,6 +74,8 @@ function toBoundTool(tool: Tool) {
 
 function toVendorMessage(message: Message): BaseMessage {
   switch (message.role) {
+    case "system":
+      return new SystemMessage(message.content);
     case "user":
       return new HumanMessage(message.content);
     case "assistant":

@@ -6,17 +6,29 @@
   "description": "A one-shot tool-calling agent with a hand-written Agent Loop, built to be read.",
   "scripts": {
     "start": "node --env-file-if-exists=.env --import tsx src/main.ts",
+    "cli": "node --env-file-if-exists=.env --import tsx src/main.ts",
     "spike": "node --env-file-if-exists=.env --import tsx spike/one-shot-agent.ts",
-    "typecheck": "tsc --noEmit"
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/react": "4.0.61",
     "@langchain/core": "^1.2.5",
     "@langchain/openrouter": "^0.4.6",
     "@langchain/tavily": "^1.2.0",
+    "ai": "7.0.58",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "streamdown": "^2.5.0",
+    "use-stick-to-bottom": "^1.1.6",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "tsx": "^4.23.11",
     "typescript": "^5.9.3"
   }
