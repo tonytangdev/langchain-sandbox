@@ -202,7 +202,7 @@ because both contradict the obvious reading of the repo's own name: `docs/adr/00
 not used) and `docs/adr/0002` (the domain owns the **Agent Loop**). Both list their rejected
 alternatives so they aren't re-proposed without context.
 
-`CONTEXT.md` is the glossary; the capitalised terms above are defined there.
+`GLOSSARY.md` is the glossary; the capitalised terms above are defined there.
 
 One vendor trap worth knowing while implementing: do not combine a `strict: true` tool with a
 provider server tool — `@langchain/core`'s tool converter throws a `TypeError` on that
@@ -258,7 +258,7 @@ Reviewed on two axes (standards, spec). Acted on:
 - **Zod-in-the-domain is now ADR 0003** rather than a justification in a file comment. It is a
   decision that reads as an ADR-0002 violation from the import list alone, so it belongs where
   decisions live.
-- **`Message` added to `CONTEXT.md`.** It is a domain type and a term the spec uses, and it
+- **`Message` added to `GLOSSARY.md`.** It is a domain type and a term the spec uses, and it
   was missing from the glossary.
 
 Knowingly not acted on:
@@ -269,7 +269,7 @@ Knowingly not acted on:
   LangChain's event firehose, which still holds. `onTurn` earns its place: the
   `no tool calls — the loop ends here` line is the clearest statement of the termination
   condition anywhere in the output.
-- **The Spike is kept**, though `CONTEXT.md` defines one as "deleted once the understanding is
+- **The Spike is kept**, though `GLOSSARY.md` defines one as "deleted once the understanding is
   had". Stage 1 was a deliverable, and it is the shortest honest answer to the question this
   repo exists to answer. Flagged rather than resolved: deleting it, or softening the glossary,
   is a call for a human.

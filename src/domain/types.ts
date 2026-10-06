@@ -1,5 +1,5 @@
 /**
- * The vocabulary of `CONTEXT.md`, as types.
+ * The vocabulary of `GLOSSARY.md`, as types.
  *
  * Nothing in `src/domain/` imports from a vendor. `zod` is the one exception, and a
  * deliberate one — see `docs/adr/0003-zod-is-domain-vocabulary.md`, which records why and

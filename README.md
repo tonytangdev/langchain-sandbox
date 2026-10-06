@@ -112,7 +112,7 @@ Read it in this order:
 | `spike/one-shot-agent.ts` | **Start here.** The whole agent in one file, no structure at all. Every mechanic in one screenful. |
 | `src/domain/agent-loop.ts` | The same loop, as domain code. ~40 lines, depends only on ports. |
 | `src/domain/ports.ts` | `ModelPort` and `SearchPort`. The line between our logic and the vendor's. |
-| `src/domain/types.ts` | **Turn**, **Tool Call**, **Message**, **Tool** — the vocabulary of `CONTEXT.md` as types. |
+| `src/domain/types.ts` | **Turn**, **Tool Call**, **Message**, **Tool** — the vocabulary of `GLOSSARY.md` as types. |
 | `src/adapters/` | Where LangChain, OpenRouter and Tavily are allowed to exist. |
 | `src/main.ts` | Composition root: builds the adapters, sets the deadline, runs the loop. |
 
@@ -130,7 +130,7 @@ Both contradict the obvious reading of this repo's own name, so they are written
 - [`docs/adr/0002`](docs/adr/0002-hexagonal-domain-owns-the-agent-loop.md) — the domain owns
   the **Agent Loop**; LangChain is an adapter.
 
-[`CONTEXT.md`](CONTEXT.md) is the glossary. The bolded words above are defined there and mean
+[`GLOSSARY.md`](GLOSSARY.md) is the glossary. The bolded words above are defined there and mean
 exactly one thing each.
 
 ## Deliberately not here

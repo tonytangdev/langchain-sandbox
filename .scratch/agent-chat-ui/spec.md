@@ -263,7 +263,7 @@ repo is for.
 
 ## Glossary additions
 
-`CONTEXT.md` needs, once this lands:
+`GLOSSARY.md` needs, once this lands:
 
 - **Workflow** — a named bundle of a system prompt, a model, and a set of tools,
   selected before a conversation begins.
